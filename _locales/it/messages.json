@@ -1,0 +1,26 @@
+{
+    "manifestName": {
+        "message": "Auto-Submitter per MKL e MKWPP",
+        "description":"Nome nel file manifest.json"
+    },
+    "manifestDescription": {
+        "message": "Trova i tuoi tempi da Chadsoft e li submitta su MKWPP e MKL in automatico.",
+        "description":"Descrizione nel file manifest.json"
+    },
+    "manifestShortName": {
+        "message": "Auto-submit",
+        "description":"Nome abbreviato nel file manifest.json"
+    },
+    "saveChadURLConfirm":{
+        "message":"Vuoi salvare questo come il tuo profilo Chadsoft?",
+        "description":"Alert"
+    },
+    "startScriptMSG":{
+        "message":"Vuoi submittare?",
+        "description":"Alert"
+    },
+    "noChadErr":{
+        "message":"Nessun profilo Chadsoft saved!",
+        "description":"Errore per quando non c'è alcun profilo Chadsoft salvato."
+    }
+}

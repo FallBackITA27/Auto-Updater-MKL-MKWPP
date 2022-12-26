@@ -1,0 +1,24 @@
+{
+    "manifest_version": 3,
+    "name": "__MSG_manifestName__",
+    "version": "0.0.1",
+    "default_locale": "en",
+    "supported_locales": ["it","en"],
+    "description": "__MSG_manifestDescription__",
+    "icons": {
+        "128":"/images/128p_icon.png"
+    },
+    "author": "diegomassanova4@gmail.com",  
+    "content_scripts": [{
+        "matches": ["https://www.mkleaderboards.com/*","https://www.mariokart64.com/mkw/*","https://www.chadsoft.co.uk/*"],
+        "js":["script.js"]
+    }],
+    "permissions": [
+        "storage"
+      ],
+    "options_ui": {
+        "page":"options/options.html",
+        "open_in_tab": false
+    },
+    "short_name": "__MSG_manifestShortName__"
+  }
