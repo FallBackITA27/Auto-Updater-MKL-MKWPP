@@ -60,6 +60,7 @@ async function grabTimesFromChadsoft(){
             };
         }
     });
+    console.log(outJSON)
     return outJSON;
 }
 async function grabTimesFromMKL(url){
@@ -114,6 +115,10 @@ async function grabTimesFromMKLsubmitted(url){
     });
     return outJSON;
 }
+async function preFilterCDforMKWPP(cdJSON){
+    for (let i of Object.keys(cdJSON)) if (Object.keys(cdJSON[i]).includes("Glitch")&&Object.keys(cdJSON[i]).includes("Shortcut")) delete cdJSON[i]["Shortcut"];
+    return cdJSON;
+}
 async function compareTimesJSON(cdJSON,siteJSON,mode){
     let outJSON = {};
     for (let i of Object.keys(cdJSON)){
@@ -135,7 +140,7 @@ async function compareTimesJSON(cdJSON,siteJSON,mode){
             }
             else if (cat === "Shortcut") {
                 if (mode === "mkwpp") {
-                    if(Object.keys(cdJSON[i]).includes("Glitch")&&cdJSON[i]["Glitch"]["finishTimeinMS"]<cdJSON[i][cat]["finishTimeinMS"])continue;
+                    if(Object.keys(cdJSON[i]).includes("Glitch")&&cdJSON[i]["Glitch"]["finishTimeinMS"]<cdJSON[i][cat]["finishTimeinMS"]) continue;
                     else if(cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
                         if (outJSON[i]===undefined) outJSON[i] = {};
                         outJSON[i][cat] = cdJSON[i][cat];
@@ -159,12 +164,19 @@ async function saveChadsoftLink(url){
     let player = url.split("/")[5]+"/"+url.split("/")[6].split(".")[0];
     chrome.storage.local.set({chadsoftSavedPlayerLink:player});
 }
+async function mergeJSONs(json1,json2){
+    for (let i of Object.keys(json2)) {
+        if (json1[i]===undefined) { json1[i] = json2[i]; continue; }
+        for (let j of Object.keys(json2[i])) if (json1[i][j]===undefined) json1[i][j] = json2[i][j];
+    }
+    return json1;
+}
 async function mkwppbehavior(url){
     if (!url.includes("?pid=")) return;
     let startScript = confirm(chrome.i18n.getMessage("startScriptMSG"));
     if (!startScript) return;
-    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),await grabTimesFromMKWPP(),"mkwpp");
-    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nPlayer: ${document.getElementsByClassName("profr")[0].innerHTML}\n\n`
+    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft()),await grabTimesFromMKWPP(),"mkwpp");
+    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${document.getElementsByClassName("profr")[0].innerHTML}\n\n`
     for (let i of Object.keys(finalJSON)){
         for (let j of Object.keys(finalJSON[i])){
             if (j!=="Normal") finaltext += `${[i]}: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
@@ -186,7 +198,9 @@ async function mklbehavior(url){
     for (let i of document.getElementById("navigation_user").getElementsByTagName("a")){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
-    let finalJSON = await compareTimesJSON(compareTimesJSON(await grabTimesFromChadsoft(),await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),"mkl"),await grabTimesFromMKL(mklMKWprofile),"mkl");
+    
+    
+    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile)),"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
         console.log("executed")
