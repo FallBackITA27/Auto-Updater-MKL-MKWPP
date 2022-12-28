@@ -60,7 +60,6 @@ async function grabTimesFromChadsoft(){
             };
         }
     });
-    console.log(outJSON)
     return outJSON;
 }
 async function grabTimesFromMKL(url){
@@ -122,21 +121,18 @@ async function preFilterCDforMKWPP(cdJSON){
 async function compareTimesJSON(cdJSON,siteJSON,mode){
     let outJSON = {};
     for (let i of Object.keys(cdJSON)){
-        if (!Object.keys(siteJSON).includes(i)) {
-            if (mode = "mkl") outJSON[i] = cdJSON[i];
-            else outJSON[i] = cdJSON[i];
-        }
+        if (!Object.keys(siteJSON).includes(i)) outJSON[i] = cdJSON[i];
         else for (let cat of Object.keys(cdJSON[i])){
             if (siteJSON[i][cat] === undefined) {
                 if (outJSON[i]===undefined) outJSON[i]={};
                 outJSON[i][cat] = {};
-                if (mode = "mkl") outJSON[i][cat] = cdJSON[i][cat];
-                else outJSON[i][cat] = cdJSON[i][cat];
+                outJSON[i][cat] = cdJSON[i][cat];
             }
-            else if (cat === "Normal") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
-                if (outJSON[i]===undefined) outJSON[i] = {};
-                if (mode = "mkl") outJSON[i][cat] = cdJSON[i][cat];
-                else outJSON[i][cat] = cdJSON[i][cat];
+            else if (cat === "Normal") {
+                if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) if (outJSON[i]===undefined) {
+                    outJSON[i] = {};
+                    outJSON[i][cat] = cdJSON[i][cat];
+                }
             }
             else if (cat === "Shortcut") {
                 if (mode === "mkwpp") {
@@ -145,7 +141,10 @@ async function compareTimesJSON(cdJSON,siteJSON,mode){
                         if (outJSON[i]===undefined) outJSON[i] = {};
                         outJSON[i][cat] = cdJSON[i][cat];
                     }
-                } else if (mode = "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) outJSON[i][cat] = cdJSON[i][cat];
+                } else if (mode === "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
+                    if (outJSON[i] === undefined) outJSON[i] = {};
+                    outJSON[i][cat] = cdJSON[i][cat];
+                }
             }
             else if (cat === "Glitch") {
                 if (mode === "mkwpp") {
@@ -154,7 +153,10 @@ async function compareTimesJSON(cdJSON,siteJSON,mode){
                         if (outJSON[i]===undefined) outJSON[i] = {};
                         outJSON[i][cat] = cdJSON[i][cat];
                     }
-                } else if (mode = "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) outJSON[i][cat] = cdJSON[i][cat];
+                } else if (mode === "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
+                    if (outJSON[i] === undefined) outJSON[i] = {};
+                    outJSON[i][cat] = cdJSON[i][cat];
+                }
             }
         }
     }
@@ -198,8 +200,6 @@ async function mklbehavior(url){
     for (let i of document.getElementById("navigation_user").getElementsByTagName("a")){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
-    
-    
     let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile)),"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
