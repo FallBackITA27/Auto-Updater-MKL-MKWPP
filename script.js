@@ -104,7 +104,7 @@ async function grabTimesFromMKLsubmitted(url){
             if (outJSON[trackName]===undefined) outJSON[trackName] = {};
             let category = time.getElementsByTagName("span")[0].innerHTML.split(" ")[1];
             if (category === "Non-SC") category = "Normal";
-            else if (category === "Alt-SC") category = "Shortcut";
+            else if (category === "Alternate") category = "Shortcut";
             else category = cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)][cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].length-1];
             if (outJSON[trackName][category]!==undefined) continue;
             let finishTime = time.getElementsByTagName("b")[0].innerHTML.trim();
@@ -200,7 +200,8 @@ async function mklbehavior(url){
     for (let i of document.getElementById("navigation_user").getElementsByTagName("a")){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
-    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile)),"mkl");
+    let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
+    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),mergedJSON,"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
         console.log("executed")
@@ -217,8 +218,13 @@ async function mklbehavior(url){
             if (!Object.keys(finalJSON).includes(trackName)) continue;
             let tempcat = category;
             if (tempcat === "Jolly") {
-                if (Object.keys(finalJSON[trackName]).includes("Glitch")) tempcat = "Glitch";
-                else if (Object.keys(finalJSON[trackName]).includes("Shortcut")) tempcat = "Shortcut";
+                if (Object.keys(cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].length===2)) tempcat = cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)][1];
+                // TODO: FIX
+                else if (Object.keys(mergedJSON[trackName]).includes("Glitch")) tempcat = "Glitch";
+                else if (Object.keys(mergedJSON[trackName]).includes("Shortcut")) {
+                    if (Object.keys(finalJSON[trackName]).includes("Shortcut")) tempcat = "Shortcut";
+                    else continue;
+                }
                 else continue;
             }
             if (!Object.keys(finalJSON[trackName]).includes(tempcat)) continue;
