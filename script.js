@@ -189,7 +189,7 @@ async function mkwppbehavior(mkwppurl,cdUrl){
     let url = window.location.href;
     if (!url.includes("mariokart64.com")) {
         let st = confirm(chrome.i18n.getMessage("notMKWPPpage"));
-        if (st) window.open("https://www.mariokart64.com/", '_blank').focus();
+        if (st) window.open("https://www.mariokart64.com/mkw/", '_blank').focus();
         return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
     let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft(cdUrl)),await grabTimesFromMKWPP(url),"mkwpp");
