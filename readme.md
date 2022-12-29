@@ -12,8 +12,8 @@
 
 This is a Chrome Extension (Firefox soon? 👀) that grabs times from a [Chadsoft profile](https://www.chadsoft.co.uk/time-trials/players/1F/7B7D3331A3A008.html#sort-by-date) and compares it to an [MKWPP profile](https://www.mariokart64.com/mkw/profile.php) or an [MKL profile](https://www.mkleaderboards.com/mkw/players/2450).
 ### Feature list?
-1) Automatically submit 3lap times to MKL
-2) Automatically submit 3lap times to MKWPP
+* Automatically submit 3lap times to MKL
+* Automatically submit 3lap times to MKWPP
 
 ## How do I download this?
 Sadly, I can't put this on the Chrome Webstore, so you have two options:
