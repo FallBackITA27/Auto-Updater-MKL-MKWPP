@@ -243,7 +243,8 @@ async function mklbehavior(cdUrl){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
     let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
-    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(cdUrl)[0],mergedJSON,"mkl");
+    let cdJSONs = await grabTimesFromChadsoft(cdUrl);
+    let finalJSON = await compareTimesJSON(cdJSONs[0],mergedJSON,"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;

@@ -67,11 +67,14 @@ You could donate 5$ for me to publish on the Webstore!
 ## Changelog
 
 ### Versions:
+* [1.0.4](#104)
 * [1.0.3](#103)
 * [1.0.2](#102)
 * [1.0.1](#101)
 * [1.0.0](#100)
 
+### 1.0.4
+* Bugfix, I (-FalB) accidentally pushed unfinished code.
 ### 1.0.3
 * Dealt with (aka worked around) the MKWPP CORS Policy
 ### 1.0.2
