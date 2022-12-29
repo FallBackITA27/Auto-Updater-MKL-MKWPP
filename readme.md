@@ -34,6 +34,9 @@ You click "load unpacked", and select the folder you extracted the extension in.
 
 ### 2
 You could donate 5$ for me to publish on the Webstore!
+
+![Webstore 5USD](https://i.imgur.com/16XErKN.png)
+
 (Not yet ready, I'm not 18 and don't have a PayPal yet lol)
 
 ## Changelog
