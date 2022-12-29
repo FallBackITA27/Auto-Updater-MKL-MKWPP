@@ -49,8 +49,9 @@ async function grabTimesFromChadsoft(cdUrl){
         alert(chrome.i18n.getMessage("noChadErr"));
         return;
     }
-    let rqurl = "https://tt.chadsoft.co.uk/players/" + cdUrl + ".json?times=pb";
+    let rqurl = "https://tt.chadsoft.co.uk/players/" + cdUrl + ".json";
     let outJSON = {};
+    let outJSONFlap = {};
     await fetch(rqurl).then(res=>res.json()).then(data=>{
         for (let i = 0; i < data.ghosts.length; i++){
             let ghost = data.ghosts[i];
@@ -58,15 +59,34 @@ async function grabTimesFromChadsoft(cdUrl){
             if (ghost["200cc"]) continue;
             let currTrack = mkwppTrackAbbr[chadsoftTrackNames.indexOf(ghost["trackName"])];
             let categoryName = cdCategoriesTranslated[chadsoftTrackNames.indexOf(ghost["trackName"])][cdCategories[chadsoftTrackNames.indexOf(ghost["trackName"])].indexOf(ghost._links.leaderboard.href.split("/")[ghost._links.leaderboard.href.split("/").length-1].split(".")[0].substring(1))];
-            if (outJSON[currTrack]===undefined) outJSON[currTrack] = {};
-            outJSON[currTrack][categoryName] = {
-                "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
-                "finishTime":ghost.finishTimeSimple,
-                "finishTimeinMS":convertTimeToMS(ghost.finishTimeSimple),
-            };
+            if (ghost["playersFastest"]) {
+                if (outJSON[currTrack]===undefined) outJSON[currTrack] = {};
+                outJSON[currTrack][categoryName] = {
+                    "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
+                    "finishTime":ghost.finishTimeSimple,
+                    "finishTimeinMS":convertTimeToMS(ghost.finishTimeSimple),
+                    "date":new Date(ghost.dateSet)
+                }
+            }
+            if (outJSONFlap[currTrack]===undefined) outJSONFlap[currTrack] = {};
+            if (outJSONFlap[currTrack][categoryName]===undefined) {
+                outJSONFlap[currTrack][categoryName] = {
+                    "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
+                    "finishTime":ghost.bestSplitSimple,
+                    "finishTimeinMS":convertTimeToMS(ghost.bestSplitSimple),
+                    "date":new Date(ghost.dateSet)
+                }
+            } else if (outJSONFlap[currTrack][categoryName]["finishTimeinMS"] > convertTimeToMS(ghost.bestSplitSimple)){
+                outJSONFlap[currTrack][categoryName] = {
+                    "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
+                    "finishTime":ghost.bestSplitSimple,
+                    "finishTimeinMS":convertTimeToMS(ghost.bestSplitSimple),
+                    "date":new Date(ghost.dateSet)
+                }
+            }
         }
     });
-    return outJSON;
+    return [outJSON,outJSONFlap];
 }
 async function grabTimesFromMKL(url){
     let outJSON = {};
@@ -192,7 +212,9 @@ async function mkwppbehavior(mkwppurl,cdUrl){
         if (st) window.open("https://www.mariokart64.com/mkw/", '_blank').focus();
         return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
-    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft(cdUrl)),await grabTimesFromMKWPP(mkwppurl),"mkwpp");
+    let cdJSONs = await grabTimesFromChadsoft(cdUrl);
+    console.log(cdJSONs[1])
+    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),await grabTimesFromMKWPP(mkwppurl),"mkwpp");
     let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     for (let i of Object.keys(finalJSON)){
         for (let j of Object.keys(finalJSON[i])){
@@ -221,7 +243,7 @@ async function mklbehavior(cdUrl){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
     let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
-    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(cdUrl),mergedJSON,"mkl");
+    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(cdUrl)[0],mergedJSON,"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;
