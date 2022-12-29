@@ -185,6 +185,10 @@ function invasiveCopytoClipboard(txt){
   });
 }
 async function mkwppbehavior(url){
+    if (url === undefined) {
+        alert(chrome.i18n.getMessage("noMKWPPErr"));
+        return;
+    }
     let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft()),await grabTimesFromMKWPP(url),"mkwpp");
     let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${await chrome.storage.local.get(["mkwppUsername"]).then(r=>r.mkwppUsername)}\n\n`
     for (let i of Object.keys(finalJSON)){

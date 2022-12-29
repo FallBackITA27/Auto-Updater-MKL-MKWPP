@@ -29,6 +29,7 @@ async function saveChadsoftLink(){
 
 async function saveMKWPPLink(){
     let url = document.getElementsByClassName("MKWPPinput")[0].value;
+    if (url === undefined||url === "") return;
     if (!url.includes("pid")||!url.includes("profile")||!url.includes(".php")||!url.includes("mkw")) {
         alert(chrome.i18n.getMessage("wrongMKWPPErr"));
         return;
@@ -38,7 +39,7 @@ async function saveMKWPPLink(){
 
 async function lookForUpdates(){
     let manifest = await fetch("https://raw.githubusercontent.com/FallBackITA27/Auto-Updater-MKL-MKWPP/main/manifest.json").then(r=>r.json());
-    if (manifest.version !== "1.0.1") {
+    if (manifest.version !== "1.0.2") {
         let c = confirm(chrome.i18n.getMessage("updateFound"));
         if (c) window.open("https://github.com/FallBackITA27/Auto-Updater-MKL-MKWPP/","_blank").focus()
     }
