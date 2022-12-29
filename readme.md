@@ -26,7 +26,7 @@ Then you extract it in your folder of choice
 
 ![Extract](https://i.imgur.com/CgfAhS7.png)
 
-Then you go to your browser's of choice extension page, it should be <browserNameHere>://extensions (KEEP IN MIND THAT THIS IS MADE FOR CHROMIUM BASED BROWSERS!)
+Then you go to your browser's of choice extension page, it should be \<browserNameHere\>://extensions (KEEP IN MIND THAT THIS IS MADE FOR CHROMIUM BASED BROWSERS!)
 
 ![Extensions page](https://i.imgur.com/5ziR16P.png)
 
