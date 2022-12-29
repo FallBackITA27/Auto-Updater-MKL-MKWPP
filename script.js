@@ -6,6 +6,7 @@ let cdCategories=[['0'],['0'],['2','0','1'],['2','0'],['0','1'],['2','0','1'],['
 let cdCategoriesTranslated=[['Normal'],['Normal'],['Normal','Shortcut','Glitch'],['Normal','Shortcut'],['Normal','Glitch'],['Normal','Shortcut','Glitch'],['Normal'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Glitch'],['Normal','Shortcut','Glitch'],['Normal'],['Normal'],['Normal','Shortcut'],['Normal','Glitch'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Shortcut'],['Normal','Shortcut'],['Normal','Shortcut','Glitch'],['Normal','Shortcut'],['Normal'],['Normal','Glitch'],['Normal','Shortcut'],['Normal','Glitch']];
 let cdCatstoMKWPP={"Normal":"nosc","Shortcut":"","Glitch":""};
 let cdCatstoMKL={"Normal":"mkw_nonsc_world","Shortcut":"mkw_sc_world","Glitch":"mkw_altsc_world"};
+let isMKLfunctionRunning = false;
 async function sleep(milliseconds){const date=Date.now();let currentDate=null;do{currentDate=Date.now();}while(currentDate-date<milliseconds);}
 function convertTimeToMS(timeString){let mins=parseInt(timeString.split(":")[0])*60000;let secandms=parseInt(timeString.split(":")[1].replace(".",""));return(mins)+secandms};function convertMSToTime(milliseconds){let minutes=Math.trunc(milliseconds/60/1000).toString();let seconds=Math.trunc(milliseconds/1000%60).toString();let ms=(milliseconds%1000).toString();return minutes.padStart(2,0)+":"+seconds.padStart(2,0)+"."+ms.padStart(3,0);};
 async function grabTimesFromMKWPP(url){
@@ -199,12 +200,14 @@ async function mkwppbehavior(url){
     alert("Successfully copied to clipboard.");
 }
 async function mklbehavior(){
+    if (isMKLfunctionRunning) return;
     let url = window.location.href;
     if (url!=="https://www.mkleaderboards.com/submit") {
         let st = confirm("This isn't the MKL Submission page. Wanna go to it?");
         if (st) window.open("https://www.mkleaderboards.com/submit", '_blank').focus();
     }
 
+    isMKLfunctionRunning = true;
     let mklMKWprofile;
     for (let i of document.getElementById("navigation_user").getElementsByTagName("a")){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
