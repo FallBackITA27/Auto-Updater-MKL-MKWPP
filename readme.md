@@ -30,7 +30,7 @@ Then you go to your browser's of choice extension page, it should be \<browserNa
 
 ![Extensions page](https://i.imgur.com/5ziR16P.png)
 
-You click "load unpacked", and select the folder you extracted the extension in.
+You turn on developer mode, you click "load unpacked", and select the folder you extracted the extension in.
 
 ### 2
 You could donate 5$ for me to publish on the Webstore!
