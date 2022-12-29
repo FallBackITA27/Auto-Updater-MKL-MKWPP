@@ -192,7 +192,7 @@ async function mkwppbehavior(mkwppurl,cdUrl){
         if (st) window.open("https://www.mariokart64.com/mkw/", '_blank').focus();
         return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
-    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft(cdUrl)),await grabTimesFromMKWPP(url),"mkwpp");
+    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft(cdUrl)),await grabTimesFromMKWPP(mkwppurl),"mkwpp");
     let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     for (let i of Object.keys(finalJSON)){
         for (let j of Object.keys(finalJSON[i])){
