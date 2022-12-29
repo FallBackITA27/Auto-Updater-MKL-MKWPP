@@ -11,10 +11,11 @@ async function sleep(milliseconds){const date=Date.now();let currentDate=null;do
 function convertTimeToMS(timeString){let mins=parseInt(timeString.split(":")[0])*60000;let secandms=parseInt(timeString.split(":")[1].replace(".",""));return(mins)+secandms};function convertMSToTime(milliseconds){let minutes=Math.trunc(milliseconds/60/1000).toString();let seconds=Math.trunc(milliseconds/1000%60).toString();let ms=(milliseconds%1000).toString();return minutes.padStart(2,0)+":"+seconds.padStart(2,0)+"."+ms.padStart(3,0);};
 async function grabTimesFromMKWPP(url){
     let outJSON = {};
-    try { await fetch(url).then(r=>r.text()).then(htmltxt=>{
+    await fetch(url).then(r=>r.text()).then(htmltxt=>{
         let parser = new DOMParser();
 	    let doc = parser.parseFromString(htmltxt, 'text/html');
-        chrome.storage.local.set({mkwppUsername:doc.getElementsByClassName("profr")[0].innerHTML});
+        console.log(doc)
+        sessionStorage.setItem("mkwppUsername",doc.getElementsByClassName("profr")[0].innerHTML);
         let noscTable;
         let scTable;
         for (let i of doc.getElementsByTagName("table")) {
@@ -42,17 +43,13 @@ async function grabTimesFromMKWPP(url){
         }
     }) 
     return outJSON;
-    } catch {
-        alert(chrome.i18n.getMessage("noCORSmkwppERR"))
-    }
 }
-async function grabTimesFromChadsoft(){
-    let playersChadsoft = await chrome.storage.local.get(["chadsoftSavedPlayerLink"]).then(r=>r.chadsoftSavedPlayerLink);
-    if (playersChadsoft === undefined) {
+async function grabTimesFromChadsoft(cdUrl){
+    if (cdUrl === undefined) {
         alert(chrome.i18n.getMessage("noChadErr"));
         return;
     }
-    let rqurl = "https://tt.chadsoft.co.uk/players/" + playersChadsoft + ".json?times=pb";
+    let rqurl = "https://tt.chadsoft.co.uk/players/" + cdUrl + ".json?times=pb";
     let outJSON = {};
     await fetch(rqurl).then(res=>res.json()).then(data=>{
         for (let i = 0; i < data.ghosts.length; i++){
@@ -184,13 +181,19 @@ function invasiveCopytoClipboard(txt){
     else if (result.state === 'denied') invasiveCopytoClipboard(txt)
   });
 }
-async function mkwppbehavior(url){
-    if (url === undefined) {
+async function mkwppbehavior(mkwppurl,cdUrl){
+    if (mkwppurl === undefined||mkwppurl === null) {
         alert(chrome.i18n.getMessage("noMKWPPErr"));
         return;
     }
-    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft()),await grabTimesFromMKWPP(url),"mkwpp");
-    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${await chrome.storage.local.get(["mkwppUsername"]).then(r=>r.mkwppUsername)}\n\n`
+    let url = window.location.href;
+    if (!url.includes("mariokart64.com")) {
+        let st = confirm(chrome.i18n.getMessage("notMKWPPpage"));
+        if (st) window.open("https://www.mariokart64.com/", '_blank').focus();
+        return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
+    }
+    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft(cdUrl)),await grabTimesFromMKWPP(url),"mkwpp");
+    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     for (let i of Object.keys(finalJSON)){
         for (let j of Object.keys(finalJSON[i])){
             if (j!=="Normal") finaltext += `${[i]}: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
@@ -203,12 +206,13 @@ async function mkwppbehavior(url){
     invasiveCopytoClipboard(finaltext);
     alert(chrome.i18n.getMessage("clipboardSuccess"));
 }
-async function mklbehavior(){
+async function mklbehavior(cdUrl){
     if (isMKLfunctionRunning) return;
     let url = window.location.href;
     if (url!=="https://www.mkleaderboards.com/submit") {
         let st = confirm(chrome.i18n.getMessage("notMKLpage"));
         if (st) window.open("https://www.mkleaderboards.com/submit", '_blank').focus();
+        return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
 
     isMKLfunctionRunning = true;
@@ -217,7 +221,7 @@ async function mklbehavior(){
         if (i.innerHTML === "MKW Profile") mklMKWprofile = i.href;
     }
     let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
-    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),mergedJSON,"mkl");
+    let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(cdUrl),mergedJSON,"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;
@@ -245,6 +249,6 @@ async function mklbehavior(){
 chrome.runtime.onMessage.addListener(
     async function(request) {
         console.log(request)
-        if (request.mode === "mkwpp") mkwppbehavior(request.url);
-        else if (request.mode === "mkl") mklbehavior();
+        if (request.mode === "mkwpp") mkwppbehavior(request.url,request.cdUrl);
+        else if (request.mode === "mkl") mklbehavior(request.cdUrl);
 });
