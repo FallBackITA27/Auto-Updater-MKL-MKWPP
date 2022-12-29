@@ -9,8 +9,8 @@ async function onload(){
         document.getElementsByClassName("MKWPPinput")[0].value = "https://www.mariokart64.com/mkw/profile.php?pid=" + mkwpp;
     }
     /* Translations */
-    document.getElementsByClassName("ChadsoftInput")[0].innerHTML = document.getElementsByClassName("ChadsoftInput")[0].innerHTML.replace("_",chrome.i18n.getMessage("popupSavedChadsoft"));
-    document.getElementsByClassName("MKWPPinput")[0].innerHTML = document.getElementsByClassName("MKWPPinput")[0].innerHTML.replace("_",chrome.i18n.getMessage("popupSavedMKWPP"));
+    document.getElementsByClassName("textInputs")[0].getElementsByTagName("div")[0].innerHTML = document.getElementsByClassName("textInputs")[0].getElementsByTagName("div")[0].innerHTML.replace("_",chrome.i18n.getMessage("popupSavedChadsoft"));
+    document.getElementsByClassName("textInputs")[0].getElementsByTagName("div")[1].innerHTML = document.getElementsByClassName("textInputs")[0].getElementsByTagName("div")[1].innerHTML.replace("_",chrome.i18n.getMessage("popupSavedMKWPP"));
     document.getElementsByClassName("startMKWPP")[0].value = chrome.i18n.getMessage("popupSubmitMKWPP");
     document.getElementsByClassName("startMKL")[0].value = chrome.i18n.getMessage("popupSubmitMKL");
     document.getElementsByClassName("updates")[0].value = chrome.i18n.getMessage("popupUpdatesBtn");
@@ -38,7 +38,7 @@ async function saveMKWPPLink(){
 
 async function lookForUpdates(){
     let manifest = await fetch("https://raw.githubusercontent.com/FallBackITA27/Auto-Updater-MKL-MKWPP/main/manifest.json").then(r=>r.json());
-    if (manifest.version !== "1.0.0") {
+    if (manifest.version !== "1.0.1") {
         let c = confirm(chrome.i18n.getMessage("updateFound"));
         if (c) window.open("https://github.com/FallBackITA27/Auto-Updater-MKL-MKWPP/","_blank").focus()
     }
