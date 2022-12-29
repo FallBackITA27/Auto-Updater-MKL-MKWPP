@@ -43,7 +43,7 @@ async function grabTimesFromMKWPP(url){
     }) 
     return outJSON;
     } catch {
-        alert("Error submitting to MKWPP. Try to use the extension on another website.")
+        alert(chrome.i18n.getMessage("noCORSmkwppERR"))
     }
 }
 async function grabTimesFromChadsoft(){
@@ -197,13 +197,13 @@ async function mkwppbehavior(url){
         }
     }
     invasiveCopytoClipboard(finaltext);
-    alert("Successfully copied to clipboard.");
+    alert(chrome.i18n.getMessage("clipboardSuccess"));
 }
 async function mklbehavior(){
     if (isMKLfunctionRunning) return;
     let url = window.location.href;
     if (url!=="https://www.mkleaderboards.com/submit") {
-        let st = confirm("This isn't the MKL Submission page. Wanna go to it?");
+        let st = confirm(chrome.i18n.getMessage("notMKLpage"));
         if (st) window.open("https://www.mkleaderboards.com/submit", '_blank').focus();
     }
 

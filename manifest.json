@@ -1,14 +1,14 @@
 {
     "manifest_version": 3,
     "name": "__MSG_manifestName__",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "default_locale": "en",
     "supported_locales": ["it","en"],
     "description": "__MSG_manifestDescription__",
     "icons": {
         "128":"/images/128p_icon.png"
     },
-    "author": "diegomassanova4@gmail.com",  
+    "author": "leilamassanova@gmail.com",  
     "content_scripts": [{
         "matches": ["https://*/*"],
         "js":["script.js"]
