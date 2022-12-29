@@ -20,14 +20,24 @@ Open the Extension's popup by clicking on its icon. Then, save your Chadsoft acc
 
 ![Tut1](https://i.imgur.com/Zw9bVHl.png)
 
-This will give you a prompt to go to [MKL](https://mariokartleaderboards.com/). Once there, click "Submit to MKL" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff)
+This will give you a prompt to go to [MKL](https://mariokartleaderboards.com/). Once there, click "Submit to MKL" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff).
+
+Once there, pick one of the MKW Categories.
+
+![Tut2](https://i.imgur.com/84MNcJP.png)
+
+Once done, it'll fill the info on its own, all you have to do is double check and click on submit.
 
 #### Automatically submit 3lap times to MKWPP
 Open the Extension's popup by clicking on its icon. Then, save your Chadsoft and MKWPP accounts and click on "Submit to MKWPP".
 
 ![Tut1](https://i.imgur.com/YfTaazV.png)
 
-This will give you a prompt to go to the [MKWPP](https://mariokart64.com/mkw). Once there, click "Submit to MKWPP" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff)
+This will give you a prompt to go to the [MKWPP](https://mariokart64.com/mkw). Once there, click "Submit to MKWPP" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff).
+
+Wait a few seconds, then, another prompt will pop up, to tell you that it has gotten the text for you to send in the submission chat.
+
+![Tut2](https://i.imgur.com/kXaIUho.png) ![Tut3](https://i.imgur.com/3sTFS1R.png) ![Tut4](https://i.imgur.com/RbdiL8D.png)
 
 
 ## How do I download this?
@@ -63,7 +73,7 @@ You could donate 5$ for me to publish on the Webstore!
 * [1.0.0](#100)
 
 ### 1.0.3
-* Dealt with (aka worked around) the different MKWPP CORS Policy
+* Dealt with (aka worked around) the MKWPP CORS Policy
 ### 1.0.2
 * Fixed various bugs regarding storing Chadsoft and MKWPP profile
 ### 1.0.1
