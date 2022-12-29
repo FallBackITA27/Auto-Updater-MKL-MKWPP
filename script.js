@@ -8,34 +8,42 @@ let cdCatstoMKWPP={"Normal":"nosc","Shortcut":"","Glitch":""};
 let cdCatstoMKL={"Normal":"mkw_nonsc_world","Shortcut":"mkw_sc_world","Glitch":"mkw_altsc_world"};
 async function sleep(milliseconds){const date=Date.now();let currentDate=null;do{currentDate=Date.now();}while(currentDate-date<milliseconds);}
 function convertTimeToMS(timeString){let mins=parseInt(timeString.split(":")[0])*60000;let secandms=parseInt(timeString.split(":")[1].replace(".",""));return(mins)+secandms};function convertMSToTime(milliseconds){let minutes=Math.trunc(milliseconds/60/1000).toString();let seconds=Math.trunc(milliseconds/1000%60).toString();let ms=(milliseconds%1000).toString();return minutes.padStart(2,0)+":"+seconds.padStart(2,0)+"."+ms.padStart(3,0);};
-async function grabTimesFromMKWPP(){
-    let noscTable;
-    let scTable;
-    for (let i of document.getElementsByTagName("table")) {
-        if (i.getAttribute("class")==="c") scTable = i.getElementsByTagName("tbody")[0];
-        if (i.getAttribute("class")==="k") noscTable = i.getElementsByTagName("tbody")[0];
-    }
-    let outJSON = {}
-    for (let category of [noscTable,scTable]) {
-        let catRows = category.getElementsByTagName("tr");
-        for (let i = 1; i < catRows.length; i+=2){
-            if (catRows[i].getElementsByTagName("a")[1].innerHTML === "NT") continue;
-            let trackName = mkwppTrackAbbr[mkwppTrackNames.indexOf(catRows[i].getElementsByTagName("a")[0].innerHTML)];
-            if (trackName===undefined) continue;
-            if (category === noscTable) outJSON[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."))}};
-            if (category === scTable) {
-                if (outJSON[trackName]===undefined)outJSON[trackName]={};
-                let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
-                if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
-                let categoryName;
-                if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
-                else categoryName = "Shortcut";
-                outJSON[trackName][categoryName] = {};
-                outJSON[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
+async function grabTimesFromMKWPP(url){
+    let outJSON = {};
+    try { await fetch(url).then(r=>r.text()).then(htmltxt=>{
+        let parser = new DOMParser();
+	    let doc = parser.parseFromString(htmltxt, 'text/html');
+        chrome.storage.local.set({mkwppUsername:doc.getElementsByClassName("profr")[0].innerHTML});
+        let noscTable;
+        let scTable;
+        for (let i of doc.getElementsByTagName("table")) {
+            if (i.getAttribute("class")==="c") scTable = i.getElementsByTagName("tbody")[0];
+            if (i.getAttribute("class")==="k") noscTable = i.getElementsByTagName("tbody")[0];
+        }
+        for (let category of [noscTable,scTable]) {
+            let catRows = category.getElementsByTagName("tr");
+            for (let i = 1; i < catRows.length; i+=2){
+                if (catRows[i].getElementsByTagName("a")[1].innerHTML === "NT") continue;
+                let trackName = mkwppTrackAbbr[mkwppTrackNames.indexOf(catRows[i].getElementsByTagName("a")[0].innerHTML)];
+                if (trackName===undefined) continue;
+                if (category === noscTable) outJSON[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."))}};
+                if (category === scTable) {
+                    if (outJSON[trackName]===undefined)outJSON[trackName]={};
+                    let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
+                    if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
+                    let categoryName;
+                    if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
+                    else categoryName = "Shortcut";
+                    outJSON[trackName][categoryName] = {};
+                    outJSON[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
+                }
             }
         }
-    }
+    }) 
     return outJSON;
+    } catch {
+        alert("Error submitting to MKWPP. Try to use the extension on another website.")
+    }
 }
 async function grabTimesFromChadsoft(){
     let playersChadsoft = await chrome.storage.local.get(["chadsoftSavedPlayerLink"]).then(r=>r.chadsoftSavedPlayerLink);
@@ -162,10 +170,6 @@ async function compareTimesJSON(cdJSON,siteJSON,mode){
     }
     return outJSON;
 }
-async function saveChadsoftLink(url){
-    let player = url.split("/")[5]+"/"+url.split("/")[6].split(".")[0];
-    chrome.storage.local.set({chadsoftSavedPlayerLink:player});
-}
 async function mergeJSONs(json1,json2){
     for (let i of Object.keys(json2)) {
         if (json1[i]===undefined) { json1[i] = json2[i]; continue; }
@@ -173,12 +177,15 @@ async function mergeJSONs(json1,json2){
     }
     return json1;
 }
+function invasiveCopytoClipboard(txt){
+    navigator.permissions.query({name:'clipboard-write'}).then((result) => {
+    if (result.state === 'granted') navigator.clipboard.writeText(txt);
+    else if (result.state === 'denied') invasiveCopytoClipboard(txt)
+  });
+}
 async function mkwppbehavior(url){
-    if (!url.includes("?pid=")) return;
-    let startScript = confirm(chrome.i18n.getMessage("startScriptMSG"));
-    if (!startScript) return;
-    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft()),await grabTimesFromMKWPP(),"mkwpp");
-    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${document.getElementsByClassName("profr")[0].innerHTML}\n\n`
+    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(await grabTimesFromChadsoft()),await grabTimesFromMKWPP(url),"mkwpp");
+    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${await chrome.storage.local.get(["mkwppUsername"]).then(r=>r.mkwppUsername)}\n\n`
     for (let i of Object.keys(finalJSON)){
         for (let j of Object.keys(finalJSON[i])){
             if (j!=="Normal") finaltext += `${[i]}: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
@@ -188,13 +195,15 @@ async function mkwppbehavior(url){
             }
         }
     }
-    console.log(finaltext);
-    // await navigator.clipboard.writeText(finaltext)
+    invasiveCopytoClipboard(finaltext);
+    alert("Successfully copied to clipboard.");
 }
-async function mklbehavior(url){
-    if (!url.includes("submit")) return;
-    let startScript = confirm(chrome.i18n.getMessage("startScriptMSG"));
-    if (!startScript) return;
+async function mklbehavior(){
+    let url = window.location.href;
+    if (url!=="https://www.mkleaderboards.com/submit") {
+        let st = confirm("This isn't the MKL Submission page. Wanna go to it?");
+        if (st) window.open("https://www.mkleaderboards.com/submit", '_blank').focus();
+    }
 
     let mklMKWprofile;
     for (let i of document.getElementById("navigation_user").getElementsByTagName("a")){
@@ -204,7 +213,6 @@ async function mklbehavior(url){
     let finalJSON = await compareTimesJSON(await grabTimesFromChadsoft(),mergedJSON,"mkl");
     console.log(finalJSON)
     setInterval(async()=>{
-        console.log("executed")
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;
         let category;
         if (document.getElementById("category").value === "mkw_nonsc_world") category = "Normal";
@@ -217,16 +225,7 @@ async function mklbehavior(url){
             let trackName = trackNames[i];
             if (!Object.keys(finalJSON).includes(trackName)) continue;
             let tempcat = category;
-            if (tempcat === "Jolly") {
-                if (Object.keys(cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].length===2)) tempcat = cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)][1];
-                // TODO: FIX
-                else if (Object.keys(mergedJSON[trackName]).includes("Glitch")) tempcat = "Glitch";
-                else if (Object.keys(mergedJSON[trackName]).includes("Shortcut")) {
-                    if (Object.keys(finalJSON[trackName]).includes("Shortcut")) tempcat = "Shortcut";
-                    else continue;
-                }
-                else continue;
-            }
+            if (tempcat === "Jolly") tempcat = cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)][cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].length-1];
             if (!Object.keys(finalJSON[trackName]).includes(tempcat)) continue;
             let timeInsert = inputs[i];
             let ghostInsert = inputs[i+1];
@@ -235,17 +234,10 @@ async function mklbehavior(url){
         }
     },1000);
 }
-async function loadCorrectMKpage(url){
-    console.log(url);
-    if (typeof url !== "string") return "typeError";
-    console.log("Script loaded");
-    if (url.includes("mkleaderboards")) mklbehavior(url);
-    if (url.includes("mariokart64.com")) mkwppbehavior(url);
-    if (url.includes("chadsoft")) {
-        if (url.includes("players")){
-            let saveUrl = confirm(chrome.i18n.getMessage("saveChadURLConfirm"));
-            if (saveUrl) saveChadsoftLink(url);
-        }
-    }
-};
-loadCorrectMKpage(window.location.href);
+
+chrome.runtime.onMessage.addListener(
+    async function(request) {
+        console.log(request)
+        if (request.mode === "mkwpp") mkwppbehavior(request.url);
+        else if (request.mode === "mkl") mklbehavior();
+});

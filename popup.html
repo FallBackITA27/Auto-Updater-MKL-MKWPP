@@ -5,9 +5,28 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title></title>
+    <style>
+        body>* {
+            padding: 10px;
+        }
+        .scriptsActions>* {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
 </head>
-<body>
-    <div><p>TEST TEST</p></div>
+<body style="padding:20px">
+    <div class="textInputs">
+        <div>Saved Chadsoft<input class="ChadsoftInput" type="text"></div>
+        <div>Saved MKWPP<input class="MKWPPinput" type="text"></div>
+    </div>
+    <div class="saveActions">
+        <input class="saveSett" style="background-color: white; " type="button" value="Save Current Settings">
+    </div>
+    <div class="scriptsActions">
+        <input class="startMKWPP" style="background-color: white; " type="button" value="Submit to MKWPP">
+        <input class="startMKL" style="background-color: white; " type="button" value="Submit to MKL">
+    </div>
 </body>
 </html>
 <script src="popup.js"></script>
