@@ -12,8 +12,23 @@
 
 This is a Chrome Extension (Firefox soon? 👀) that grabs times from a [Chadsoft profile](https://www.chadsoft.co.uk/time-trials/players/1F/7B7D3331A3A008.html#sort-by-date) and compares it to an [MKWPP profile](https://www.mariokart64.com/mkw/profile.php) or an [MKL profile](https://www.mkleaderboards.com/mkw/players/2450).
 ### Feature list?
-* Automatically submit 3lap times to MKL
-* Automatically submit 3lap times to MKWPP
+* [Automatically submit 3lap times to MKL](#automatically-submit-3lap-times-to-mkl)
+* [Automatically submit 3lap times to MKWPP](#automatically-submit-3lap-times-to-mkwpp)
+
+#### Automatically submit 3lap times to MKL
+Open the Extension's popup by clicking on its icon. Then, save your Chadsoft account and click on "Submit to MKL".
+
+![Tut1](https://i.imgur.com/Zw9bVHl.png)
+
+This will give you a prompt to go to [MKL](https://mariokartleaderboards.com/). Once there, click "Submit to MKL" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff)
+
+#### Automatically submit 3lap times to MKWPP
+Open the Extension's popup by clicking on its icon. Then, save your Chadsoft and MKWPP accounts and click on "Submit to MKWPP".
+
+![Tut1](https://i.imgur.com/YfTaazV.png)
+
+This will give you a prompt to go to the [MKWPP](https://mariokart64.com/mkw). Once there, click "Submit to MKWPP" again. (There's technical reasons to why this is needed, I'll change it in the future when I'm done with more important stuff)
+
 
 ## How do I download this?
 Sadly, I can't put this on the Chrome Webstore, so you have two options:
@@ -48,10 +63,11 @@ You could donate 5$ for me to publish on the Webstore!
 * [1.0.0](#100)
 
 ### 1.0.3
-Dealt with (aka worked around) the different MKWPP CORS Policy
+* Dealt with (aka worked around) the different MKWPP CORS Policy
 ### 1.0.2
-Fixed various bugs regarding storing Chadsoft and MKWPP profile
+* Fixed various bugs regarding storing Chadsoft and MKWPP profile
 ### 1.0.1
-Italian Localization added
+* Italian Localization added
 ### 1.0.0
-Initial release
+* Initial release
+* Added updating for 3lap both on [MKL](#automatically-submit-3lap-times-to-mkl) and [MKWPP](#automatically-submit-3lap-times-to-mkwpp).
