@@ -67,6 +67,7 @@ You could donate 5$ for me to publish on the Webstore!
 ## Changelog
 
 ### Versions:
+* [1.1.2](#112)
 * [1.1.1](#111)
 * [1.1.0](#110)
 * [1.0.4](#104)
@@ -75,6 +76,8 @@ You could donate 5$ for me to publish on the Webstore!
 * [1.0.1](#101)
 * [1.0.0](#100)
 
+### 1.1.2
+* The script now looks for updates once a day. --FalB
 ### 1.1.1
 * Bugfixes
     * I forgot to write "flap" on flap only submissions lol --FalB

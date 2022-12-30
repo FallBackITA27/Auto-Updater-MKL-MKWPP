@@ -35,14 +35,16 @@ async function saveMKWPPLink(){
     localStorage.setItem("savedMKWPPacc",url.split("=")[1]);
 }
 
-async function lookForUpdates(){
+async function lookForUpdates(mode = 0){
     /* Checks if the Manifest file uploaded to Github is the same version as the current file */
     let manifest = await fetch("https://raw.githubusercontent.com/FallBackITA27/Auto-Updater-MKL-MKWPP/main/manifest.json").then(r=>r.json());
-    if (manifest.version !== "1.1.1") { // VERSION HERE (Comment for CTRL+F)
+    if (manifest.version !== "1.1.2") { // VERSION HERE (Comment for CTRL+F)
         let c = confirm(chrome.i18n.getMessage("updateFound"));
         if (c) window.open("https://github.com/FallBackITA27/Auto-Updater-MKL-MKWPP/","_blank").focus()
     }
-    else alert(chrome.i18n.getMessage("noUpdates"))
+    else if (mode===1) alert(chrome.i18n.getMessage("noUpdates"));
+    localStorage.setItem("lastUpdateCheck",Date.now());
+    return;
 }
 
 async function startMKWPPscript(){
@@ -61,4 +63,6 @@ onload();
 document.getElementsByClassName("saveSett")[0].addEventListener("click",()=>{saveChadsoftLink();saveMKWPPLink()});
 document.getElementsByClassName("startMKWPP")[0].addEventListener("click",async()=>{await startMKWPPscript()});
 document.getElementsByClassName("startMKL")[0].addEventListener("click",async()=>{await startMKLscript()});
-document.getElementsByClassName("updates")[0].addEventListener("click",async()=>{await lookForUpdates()});
+document.getElementsByClassName("updates")[0].addEventListener("click",async()=>{await lookForUpdates(1)});
+
+if (localStorage.getItem("lastUpdateCheck")===undefined||localStorage.getItem("lastUpdateCheck")-Date.now()>86400) lookForUpdates();
