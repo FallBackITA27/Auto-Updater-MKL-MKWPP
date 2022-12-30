@@ -6,15 +6,16 @@ let cdCategories=[['0'],['0'],['2','0','1'],['2','0'],['0','1'],['2','0','1'],['
 let cdCategoriesTranslated=[['Normal'],['Normal'],['Normal','Shortcut','Glitch'],['Normal','Shortcut'],['Normal','Glitch'],['Normal','Shortcut','Glitch'],['Normal'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Glitch'],['Normal','Shortcut','Glitch'],['Normal'],['Normal'],['Normal','Shortcut'],['Normal','Glitch'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Glitch'],['Normal'],['Normal','Glitch'],['Normal','Shortcut'],['Normal','Shortcut'],['Normal','Shortcut','Glitch'],['Normal','Shortcut'],['Normal'],['Normal','Glitch'],['Normal','Shortcut'],['Normal','Glitch']];
 let cdCatstoMKWPP={"Normal":"nosc","Shortcut":"","Glitch":""};
 let cdCatstoMKL={"Normal":"mkw_nonsc_world","Shortcut":"mkw_sc_world","Glitch":"mkw_altsc_world"};
+let mths = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 let isMKLfunctionRunning = false;
 async function sleep(milliseconds){const date=Date.now();let currentDate=null;do{currentDate=Date.now();}while(currentDate-date<milliseconds);}
 function convertTimeToMS(timeString){let mins=parseInt(timeString.split(":")[0])*60000;let secandms=parseInt(timeString.split(":")[1].replace(".",""));return(mins)+secandms};function convertMSToTime(milliseconds){let minutes=Math.trunc(milliseconds/60/1000).toString();let seconds=Math.trunc(milliseconds/1000%60).toString();let ms=(milliseconds%1000).toString();return minutes.padStart(2,0)+":"+seconds.padStart(2,0)+"."+ms.padStart(3,0);};
 async function grabTimesFromMKWPP(url){
     let outJSON = {};
+    let outJSONFlap = {}
     await fetch(url).then(r=>r.text()).then(htmltxt=>{
         let parser = new DOMParser();
 	    let doc = parser.parseFromString(htmltxt, 'text/html');
-        console.log(doc)
         sessionStorage.setItem("mkwppUsername",doc.getElementsByClassName("profr")[0].innerHTML);
         let noscTable;
         let scTable;
@@ -28,21 +29,36 @@ async function grabTimesFromMKWPP(url){
                 if (catRows[i].getElementsByTagName("a")[1].innerHTML === "NT") continue;
                 let trackName = mkwppTrackAbbr[mkwppTrackNames.indexOf(catRows[i].getElementsByTagName("a")[0].innerHTML)];
                 if (trackName===undefined) continue;
-                if (category === noscTable) outJSON[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."))}};
-                if (category === scTable) {
-                    if (outJSON[trackName]===undefined)outJSON[trackName]={};
-                    let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
-                    if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
-                    let categoryName;
-                    if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
-                    else categoryName = "Shortcut";
-                    outJSON[trackName][categoryName] = {};
-                    outJSON[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
+                if (category === noscTable) {
+                    outJSON[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."))}};
+                    outJSONFlap[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i+1].getElementsByTagName("a")[0].innerHTML.replace("\'",":").replace("\"","."))}};
+                } else if (category === scTable) {
+                    for (let n = 0; n<2; n++){
+                        let categoryName;
+                        if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
+                        else categoryName = "Shortcut";
+                        // n === 0 3lap, n === 1 flap
+                        if (n === 0) {
+                            if (outJSON[trackName]===undefined)outJSON[trackName]={};
+                            let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
+                            if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
+                            if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
+                            outJSON[trackName][categoryName] = {};
+                            outJSON[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
+                        }
+                        else if (n === 1) {
+                            if (outJSONFlap[trackName]===undefined)outJSON[trackName]={};
+                            let finishTimeinMS = convertTimeToMS(catRows[i+1].getElementsByTagName("a")[0].innerHTML.replace("\'",":").replace("\"","."));
+                            if (outJSONFlap[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
+                            outJSONFlap[trackName][categoryName] = {};
+                            outJSONFlap[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
+                        }
+                    }
                 }
             }
         }
-    }) 
-    return outJSON;
+    })
+    return [outJSON,outJSONFlap];
 }
 async function grabTimesFromChadsoft(cdUrl){
     if (cdUrl === undefined) {
@@ -65,7 +81,7 @@ async function grabTimesFromChadsoft(cdUrl){
                     "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
                     "finishTime":ghost.finishTimeSimple,
                     "finishTimeinMS":convertTimeToMS(ghost.finishTimeSimple),
-                    "date":new Date(ghost.dateSet)
+                    "date":Math.floor(new Date(ghost.dateSet)/86400)*86400
                 }
             }
             if (outJSONFlap[currTrack]===undefined) outJSONFlap[currTrack] = {};
@@ -74,14 +90,14 @@ async function grabTimesFromChadsoft(cdUrl){
                     "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
                     "finishTime":ghost.bestSplitSimple,
                     "finishTimeinMS":convertTimeToMS(ghost.bestSplitSimple),
-                    "date":new Date(ghost.dateSet)
+                    "date":Math.floor(new Date(ghost.dateSet)/86400)*86400
                 }
             } else if (outJSONFlap[currTrack][categoryName]["finishTimeinMS"] > convertTimeToMS(ghost.bestSplitSimple)){
                 outJSONFlap[currTrack][categoryName] = {
                     "cdRunLink":"https://chadsoft.co.uk/time-trials"+ghost["href"].replace(".rkg",".html"),
                     "finishTime":ghost.bestSplitSimple,
                     "finishTimeinMS":convertTimeToMS(ghost.bestSplitSimple),
-                    "date":new Date(ghost.dateSet)
+                    "date":Math.floor(new Date(ghost.dateSet)/86400)*86400
                 }
             }
         }
@@ -195,6 +211,29 @@ async function mergeJSONs(json1,json2){
     }
     return json1;
 }
+/**
+ * @param {{}} json1 3lap json from CD
+ * @param {{}} json2 flap json from CD
+ * @returns a merged json for the MKWPP script.
+ */
+async function mergeJSONsByDates(json1,json2){
+    let outJSON = {};
+    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) outJSON[json1[track][category]["date"]] = {};
+    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) outJSON[json2[track][category]["date"]] = {};
+    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) {
+        let date = json1[track][category]["date"];
+        if (outJSON[date][track] === undefined) outJSON[date][track] = {};
+        outJSON[date][track][category] = {};
+        outJSON[date][track][category]["3lap"] = json1[track][category];
+    }
+    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) {
+        let date = json2[track][category]["date"];
+        if (outJSON[date][track] === undefined) outJSON[date][track] = {};
+        if (outJSON[date][track][category]===undefined) outJSON[date][track][category] = {};
+        outJSON[date][track][category]["flap"] = json2[track][category];
+    }
+    return outJSON;
+}
 function invasiveCopytoClipboard(txt){
     navigator.permissions.query({name:'clipboard-write'}).then((result) => {
     if (result.state === 'granted') navigator.clipboard.writeText(txt);
@@ -213,17 +252,31 @@ async function mkwppbehavior(mkwppurl,cdUrl){
         return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
     let cdJSONs = await grabTimesFromChadsoft(cdUrl);
-    console.log(cdJSONs[1])
-    let finalJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),await grabTimesFromMKWPP(mkwppurl),"mkwpp");
-    let finaltext = `Date: ${new Date().toDateString().split(" ").splice(1).join(" ")}\nName: ${sessionStorage.getItem("mkwppUsername")}\n\n`
-    for (let i of Object.keys(finalJSON)){
-        for (let j of Object.keys(finalJSON[i])){
-            if (j!=="Normal") finaltext += `${[i]}: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
-            if (j==="Normal") {
-                if (!cdCategoriesTranslated[mkwppTrackAbbr.indexOf(i)].includes("Glitch")&&!cdCategoriesTranslated[mkwppTrackAbbr.indexOf(i)].includes("Shortcut")) finaltext += `${[i]}: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
-                if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(i)].includes("Glitch")||cdCategoriesTranslated[mkwppTrackAbbr.indexOf(i)].includes("Shortcut")) finaltext += `${[i]} nosc: ${finalJSON[i][j]["finishTime"].substring(1)}\n`
-            }
+    let mkwppsJSONs = await grabTimesFromMKWPP(mkwppurl);
+    let courseJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),mkwppsJSONs[0],"mkwpp");
+    let flapJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[1]),mkwppsJSONs[1],"mkwpp");
+    let finalJSON = await mergeJSONsByDates(courseJSON,flapJSON);
+    let usernameLine = `Name: ${sessionStorage.getItem("mkwppUsername")}\n\n`
+    let finaltext = "";
+    for (let date of Object.keys(finalJSON)){
+        let formattedDate = new Date(parseInt(date));
+        let day = formattedDate.getDate();
+        let dayTxt;
+        if (day.toString().substring(day.toString().length-1)==="1") dayTxt = "st";
+        else if (day.toString().substring(day.toString().length-1)==="2") dayTxt = "nd";
+        else if (day.toString().substring(day.toString().length-1)==="3") dayTxt = "rd";
+        else dayTxt = "th";
+        finaltext+=`Date: ${mths[formattedDate.getMonth()]} ${day}${dayTxt}, ${formattedDate.getFullYear()}\n${usernameLine}`
+        for (let track of Object.keys(finalJSON[date])) for (let category of Object.keys(finalJSON[date][track])){
+            let writecat = "";
+            if (category==="Normal") writecat = "nosc "
+            if (Object.keys(finalJSON[date][track][category]).includes("3lap")) {
+                finaltext += `${track} ${writecat}${finalJSON[date][track][category]["3lap"]["finishTime"].substring(1)}`;
+                if (Object.keys(finalJSON[date][track][category]).includes("flap")) finaltext += ` / ${finalJSON[date][track][category]["flap"]["finishTime"].substring(1)}\n`;
+                else finaltext += "\n";
+            } else if (Object.keys(finalJSON[date][track][category]).includes("flap")) finaltext += `${track} ${writecat}${finalJSON[date][track][category]["flap"]["finishTime"].substring(1)}\n`;
         }
+        finaltext += "\n"
     }
     invasiveCopytoClipboard(finaltext);
     alert(chrome.i18n.getMessage("clipboardSuccess"));
@@ -245,9 +298,11 @@ async function mklbehavior(cdUrl){
     let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
     let cdJSONs = await grabTimesFromChadsoft(cdUrl);
     let finalJSON = await compareTimesJSON(cdJSONs[0],mergedJSON,"mkl");
-    console.log(finalJSON)
+    let catVal; 
     setInterval(async()=>{
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;
+        if (catVal === document.getElementById("category").value) return;
+        catVal = document.getElementById("category").value;
         let category;
         if (document.getElementById("category").value === "mkw_nonsc_world") category = "Normal";
         else if (document.getElementById("category").value === "mkw_altsc_world") category = "Shortcut";
@@ -271,7 +326,6 @@ async function mklbehavior(cdUrl){
 
 chrome.runtime.onMessage.addListener(
     async function(request) {
-        console.log(request)
         if (request.mode === "mkwpp") mkwppbehavior(request.url,request.cdUrl);
         else if (request.mode === "mkl") mklbehavior(request.cdUrl);
 });

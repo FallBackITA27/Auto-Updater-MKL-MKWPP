@@ -67,20 +67,26 @@ You could donate 5$ for me to publish on the Webstore!
 ## Changelog
 
 ### Versions:
+* [1.0.5](#105)
 * [1.0.4](#104)
 * [1.0.3](#103)
 * [1.0.2](#102)
 * [1.0.1](#101)
 * [1.0.0](#100)
 
+### 1.0.5
+* Fixed "Undeletable" MKL form fill-ins --FalB
+    * This is awkward to admit. The way the script decides whether to fill is every two seconds it checks the category that is selected and fills accordingly. I did not think about what happens if one wants to delete what's written there. Now it only fills if the category has changed in the last two seconds. Why the two second check? Originally I wanted to make it so that the script would fire every time that the category is changed, but sadly the form takes a little bit more to update, so it would break everything.
+* Added date support for MKWPP!
+* Added flap support for MKL!
 ### 1.0.4
-* Bugfix, I (-FalB) accidentally pushed unfinished code.
+* Bugfix, I accidentally pushed unfinished code. --FalB
 ### 1.0.3
-* Dealt with (aka worked around) the MKWPP CORS Policy
+* Dealt with (aka worked around) the MKWPP CORS Policy --FalB
 ### 1.0.2
-* Fixed various bugs regarding storing Chadsoft and MKWPP profile
+* Fixed various bugs regarding storing Chadsoft and MKWPP profile --FalB
 ### 1.0.1
-* Italian Localization added
+* Italian Localization added --FalB
 ### 1.0.0
-* Initial release
-* Added updating for 3lap both on [MKL](#automatically-submit-3lap-times-to-mkl) and [MKWPP](#automatically-submit-3lap-times-to-mkwpp).
+* Initial release --FalB
+* Added updating for 3lap both on [MKL](#automatically-submit-3lap-times-to-mkl) and [MKWPP](#automatically-submit-3lap-times-to-mkwpp). --FalB
