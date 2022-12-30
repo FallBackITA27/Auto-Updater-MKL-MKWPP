@@ -13,7 +13,7 @@
 This is a Chrome Extension (Firefox soon? 👀) that grabs times from a [Chadsoft profile](https://www.chadsoft.co.uk/time-trials/players/1F/7B7D3331A3A008.html#sort-by-date) and compares it to an [MKWPP profile](https://www.mariokart64.com/mkw/profile.php) or an [MKL profile](https://www.mkleaderboards.com/mkw/players/2450).
 ### Feature list?
 * [Automatically submit 3lap times to MKL](#automatically-submit-3lap-times-to-mkl)
-* [Automatically submit 3lap times to MKWPP](#automatically-submit-3lap-times-to-mkwpp)
+* [Automatically submit times to MKWPP](#automatically-submit-times-to-mkwpp)
 
 #### Automatically submit 3lap times to MKL
 Open the Extension's popup by clicking on its icon. Then, save your Chadsoft account and click on "Submit to MKL".
@@ -28,7 +28,7 @@ Once there, pick one of the MKW Categories.
 
 Once done, it'll fill the info on its own, all you have to do is double check and click on submit.
 
-#### Automatically submit 3lap times to MKWPP
+#### Automatically submit times to MKWPP
 Open the Extension's popup by clicking on its icon. Then, save your Chadsoft and MKWPP accounts and click on "Submit to MKWPP".
 
 ![Tut1](https://i.imgur.com/YfTaazV.png)
@@ -77,8 +77,8 @@ You could donate 5$ for me to publish on the Webstore!
 ### 1.0.5
 * Fixed "Undeletable" MKL form fill-ins --FalB
     * This is awkward to admit. The way the script decides whether to fill is every two seconds it checks the category that is selected and fills accordingly. I did not think about what happens if one wants to delete what's written there. Now it only fills if the category has changed in the last two seconds. Why the two second check? Originally I wanted to make it so that the script would fire every time that the category is changed, but sadly the form takes a little bit more to update, so it would break everything.
-* Added date support for MKWPP!
-* Added flap support for MKL!
+* Added date support for MKWPP! --FalB
+* Added flap support for MKWPP! --FalB
 ### 1.0.4
 * Bugfix, I accidentally pushed unfinished code. --FalB
 ### 1.0.3
@@ -89,4 +89,4 @@ You could donate 5$ for me to publish on the Webstore!
 * Italian Localization added --FalB
 ### 1.0.0
 * Initial release --FalB
-* Added updating for 3lap both on [MKL](#automatically-submit-3lap-times-to-mkl) and [MKWPP](#automatically-submit-3lap-times-to-mkwpp). --FalB
+* Added updating for 3lap both on [MKL](#automatically-submit-3lap-times-to-mkl) and [MKWPP](#automatically-submit-times-to-mkwpp). --FalB
