@@ -211,6 +211,18 @@ async function mergeJSONs(json1,json2){
     }
     return json1;
 }
+
+function getDateString(unixTimestamp){
+    let date = new Date(unixTimestamp);
+    let day = date.getDate();
+    let dayTxt;
+    if (day.toString().substring(day.toString().length-1)==="1") dayTxt = "st";
+    else if (day.toString().substring(day.toString().length-1)==="2") dayTxt = "nd";
+    else if (day.toString().substring(day.toString().length-1)==="3") dayTxt = "rd";
+    else dayTxt = "th";
+    return `${mths[date.getMonth()]} ${day}${dayTxt}, ${date.getFullYear()}`;
+}
+
 /**
  * @param {{}} json1 3lap json from CD
  * @param {{}} json2 flap json from CD
@@ -218,16 +230,17 @@ async function mergeJSONs(json1,json2){
  */
 async function mergeJSONsByDates(json1,json2){
     let outJSON = {};
-    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) outJSON[json1[track][category]["date"]] = {};
-    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) outJSON[json2[track][category]["date"]] = {};
+   
+    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) outJSON[getDateString(json1[track][category]["date"])] = {};
+    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) outJSON[getDateString(json2[track][category]["date"])] = {};
     for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) {
-        let date = json1[track][category]["date"];
+        let date = getDateString(json1[track][category]["date"]);
         if (outJSON[date][track] === undefined) outJSON[date][track] = {};
         outJSON[date][track][category] = {};
         outJSON[date][track][category]["3lap"] = json1[track][category];
     }
     for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) {
-        let date = json2[track][category]["date"];
+        let date = getDateString(json2[track][category]["date"]);
         if (outJSON[date][track] === undefined) outJSON[date][track] = {};
         if (outJSON[date][track][category]===undefined) outJSON[date][track][category] = {};
         outJSON[date][track][category]["flap"] = json2[track][category];
@@ -259,14 +272,7 @@ async function mkwppbehavior(mkwppurl,cdUrl){
     let usernameLine = `Name: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     let finaltext = "";
     for (let date of Object.keys(finalJSON)){
-        let formattedDate = new Date(parseInt(date));
-        let day = formattedDate.getDate();
-        let dayTxt;
-        if (day.toString().substring(day.toString().length-1)==="1") dayTxt = "st";
-        else if (day.toString().substring(day.toString().length-1)==="2") dayTxt = "nd";
-        else if (day.toString().substring(day.toString().length-1)==="3") dayTxt = "rd";
-        else dayTxt = "th";
-        finaltext+=`Date: ${mths[formattedDate.getMonth()]} ${day}${dayTxt}, ${formattedDate.getFullYear()}\n${usernameLine}`
+        finaltext+=`Date: ${date}\n${usernameLine}`
         for (let track of Object.keys(finalJSON[date])) for (let category of Object.keys(finalJSON[date][track])){
             let writecat = "";
             if (category==="Normal") writecat = "nosc "
