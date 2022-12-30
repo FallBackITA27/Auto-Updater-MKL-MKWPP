@@ -41,6 +41,7 @@ async function grabTimesFromMKWPP(url){
                         if (n === 0) {
                             if (outJSON[trackName]===undefined)outJSON[trackName]={};
                             let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
+                            if (finishTimeinMS==="NT") continue;
                             if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
                             if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
                             outJSON[trackName][categoryName] = {};
@@ -49,6 +50,7 @@ async function grabTimesFromMKWPP(url){
                         else if (n === 1) {
                             if (outJSONFlap[trackName]===undefined)outJSON[trackName]={};
                             let finishTimeinMS = convertTimeToMS(catRows[i+1].getElementsByTagName("a")[0].innerHTML.replace("\'",":").replace("\"","."));
+                            if (finishTimeinMS==="NT") continue;
                             if (outJSONFlap[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
                             outJSONFlap[trackName][categoryName] = {};
                             outJSONFlap[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
@@ -280,7 +282,7 @@ async function mkwppbehavior(mkwppurl,cdUrl){
                 finaltext += `${track} ${writecat}${finalJSON[date][track][category]["3lap"]["finishTime"].substring(1)}`;
                 if (Object.keys(finalJSON[date][track][category]).includes("flap")) finaltext += ` / ${finalJSON[date][track][category]["flap"]["finishTime"].substring(1)}\n`;
                 else finaltext += "\n";
-            } else if (Object.keys(finalJSON[date][track][category]).includes("flap")) finaltext += `${track} ${writecat}${finalJSON[date][track][category]["flap"]["finishTime"].substring(1)}\n`;
+            } else if (Object.keys(finalJSON[date][track][category]).includes("flap")) finaltext += `${track} ${writecat}flap ${finalJSON[date][track][category]["flap"]["finishTime"].substring(1)}\n`;
         }
         finaltext += "\n"
     }
