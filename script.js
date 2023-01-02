@@ -179,45 +179,19 @@ async function preFilterCDforMKWPP(cdJSON){
     for (let i of Object.keys(cdJSON)) if (Object.keys(cdJSON[i]).includes("Glitch")&&Object.keys(cdJSON[i]).includes("Shortcut")) delete cdJSON[i]["Shortcut"];
     return cdJSON;
 }
-async function compareTimesJSON(cdJSON,siteJSON,mode){
+async function compareTimesJSON(cdJSON,siteJSON){
     let outJSON = {};
     for (let i of Object.keys(cdJSON)){
         if (!Object.keys(siteJSON).includes(i)) outJSON[i] = cdJSON[i];
         else for (let cat of Object.keys(cdJSON[i])){
             if (siteJSON[i][cat] === undefined) {
-                if (outJSON[i]===undefined) outJSON[i]={};
+                if (outJSON[i] === undefined) outJSON[i]={};
                 outJSON[i][cat] = {};
                 outJSON[i][cat] = cdJSON[i][cat];
             }
-            else if (cat === "Normal") {
-                if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) if (outJSON[i]===undefined) {
-                    outJSON[i] = {};
-                    outJSON[i][cat] = cdJSON[i][cat];
-                }
-            }
-            else if (cat === "Shortcut") {
-                if (mode === "mkwpp") {
-                    if(Object.keys(cdJSON[i]).includes("Glitch")&&cdJSON[i]["Glitch"]["finishTimeinMS"]<cdJSON[i][cat]["finishTimeinMS"]) continue;
-                    else if(cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
-                        if (outJSON[i]===undefined) outJSON[i] = {};
-                        outJSON[i][cat] = cdJSON[i][cat];
-                    }
-                } else if (mode === "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
-                    if (outJSON[i] === undefined) outJSON[i] = {};
-                    outJSON[i][cat] = cdJSON[i][cat];
-                }
-            }
-            else if (cat === "Glitch") {
-                if (mode === "mkwpp") {
-                    if(Object.keys(cdJSON[i]).includes("Shortcut")&&cdJSON[i]["Shortcut"]["finishTimeinMS"]<cdJSON[i][cat]["finishTimeinMS"])continue;
-                    else if(cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
-                        if (outJSON[i]===undefined) outJSON[i] = {};
-                        outJSON[i][cat] = cdJSON[i][cat];
-                    }
-                } else if (mode === "mkl") if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
-                    if (outJSON[i] === undefined) outJSON[i] = {};
-                    outJSON[i][cat] = cdJSON[i][cat];
-                }
+            else if (cdJSON[i][cat]["finishTimeinMS"]<siteJSON[i][cat]["finishTimeinMS"]) {
+                if (outJSON[i]===undefined) outJSON[i] = {};
+                outJSON[i][cat] = cdJSON[i][cat];
             }
         }
     }
@@ -285,8 +259,8 @@ async function mkwppbehavior(mkwppurl,cdUrl){
     }
     let cdJSONs = await grabTimesFromChadsoft(cdUrl);
     let mkwppsJSONs = await grabTimesFromMKWPP(mkwppurl);
-    let courseJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),mkwppsJSONs[0],"mkwpp");
-    let flapJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[1]),mkwppsJSONs[1],"mkwpp");
+    let courseJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),mkwppsJSONs[0]);
+    let flapJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[1]),mkwppsJSONs[1]);
     let finalJSON = await mergeJSONsByDates(courseJSON,flapJSON);
     let usernameLine = `Name: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     let finaltext = "";
@@ -322,7 +296,7 @@ async function mklbehavior(cdUrl){
     }
     let mergedJSON = await mergeJSONs(await grabTimesFromMKLsubmitted("https://www.mkleaderboards.com/my_submissions"),await grabTimesFromMKL(mklMKWprofile))
     let cdJSONs = await grabTimesFromChadsoft(cdUrl);
-    let finalJSON = await compareTimesJSON(cdJSONs[0],mergedJSON,"mkl");
+    let finalJSON = await compareTimesJSON(cdJSONs[0],mergedJSON);
     let catVal; 
     setInterval(async()=>{
         if (!["mkw_nonsc_world","mkw_sc_world","mkw_altsc_world"].includes(document.getElementById("category").value)) return;
