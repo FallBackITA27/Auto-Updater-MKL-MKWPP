@@ -60,7 +60,24 @@ async function grabTimesFromMKWPP(url){
             }
         }
     })
-    return [outJSON,outJSONFlap];
+    return [await crossCheckChadsoftOUTJSON(outJSON),await crossCheckChadsoftOUTJSON(outJSONFlap)];
+}
+async function crossCheckChadsoftOUTJSON(outJSON){
+    for (let track of Object.keys(outJSON)) {
+        let categories = Object.keys(outJSON[track]);
+        if (categories.length===1) continue;
+        let x, y, z;
+        if (categories.includes("Normal")) x = true;
+        if (categories.includes("Shortcut")) y = true;
+        if (categories.includes("Glitch")) z = true;
+        if (y&&z) if (outJSON[track]["Shortcut"]["finishTimeinMS"]<outJSON[track]["Glitch"]["finishTimeinMS"]) { 
+            delete outJSON[track]["Glitch"]["finishTimeinMS"];
+            z = false;
+        }
+        if (x&&y) if (outJSON[track]["Normal"]["finishTimeinMS"]<outJSON[track]["Shortcut"]["finishTimeinMS"]) delete outJSON[track]["Shortcut"]["finishTimeinMS"];
+        if (x&&z) if (outJSON[track]["Normal"]["finishTimeinMS"]<outJSON[track]["Glitch"]["finishTimeinMS"]) delete outJSON[track]["Glitch"]["finishTimeinMS"];
+    }
+    return outJSON;
 }
 async function grabTimesFromChadsoft(cdUrl){
     if (cdUrl === undefined) {
