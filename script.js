@@ -10,6 +10,25 @@ let mths = ["January","February","March","April","May","June","July","August","S
 let isMKLfunctionRunning = false;
 async function sleep(milliseconds){const date=Date.now();let currentDate=null;do{currentDate=Date.now();}while(currentDate-date<milliseconds);}
 function convertTimeToMS(timeString){let mins=parseInt(timeString.split(":")[0])*60000;let secandms=parseInt(timeString.split(":")[1].replace(".",""));return(mins)+secandms};function convertMSToTime(milliseconds){let minutes=Math.trunc(milliseconds/60/1000).toString();let seconds=Math.trunc(milliseconds/1000%60).toString();let ms=(milliseconds%1000).toString();return minutes.padStart(2,0)+":"+seconds.padStart(2,0)+"."+ms.padStart(3,0);};
+async function crossCheckChadsoftOUTJSON(outJSON){
+    for (let track of Object.keys(outJSON)) {
+        let categories = Object.keys(outJSON[track]);
+        if (categories.length===1) continue;
+        let x, y, z;
+        if (categories.includes("Normal")) x = true;
+        if (categories.includes("Shortcut")) y = true;
+        if (categories.includes("Glitch")) z = true;
+        if (y&&z) if (outJSON[track]["Shortcut"]["finishTimeinMS"]<=outJSON[track]["Glitch"]["finishTimeinMS"]) { 
+            delete outJSON[track]["Glitch"];
+            z = false;
+        }
+        if (x&&y) if (outJSON[track]["Normal"]["finishTimeinMS"]<=outJSON[track]["Shortcut"]["finishTimeinMS"]) delete outJSON[track]["Shortcut"];
+        if (x&&z) if (outJSON[track]["Normal"]["finishTimeinMS"]<=outJSON[track]["Glitch"]["finishTimeinMS"]) delete outJSON[track]["Glitch"];
+    }
+    return outJSON;
+}
+
+/* ==== Time Grabbers ==== */
 async function grabTimesFromMKWPP(url){
     let outJSON = {};
     let outJSONFlap = {}
@@ -34,16 +53,15 @@ async function grabTimesFromMKWPP(url){
                     outJSONFlap[trackName] = {"Normal":{"finishTimeinMS":convertTimeToMS(catRows[i+1].getElementsByTagName("a")[0].innerHTML.replace("\'",":").replace("\"","."))}};
                 } else if (category === scTable) {
                     for (let n = 0; n<2; n++){
-                        let categoryName;
-                        if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
-                        else categoryName = "Shortcut";
+                        let categoryName = "Jolly";
+                        if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")&&!cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Shortcut")) categoryName = "Glitch";
+                        else if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Shortcut")&&!cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Shortcut";
                         // n === 0 3lap, n === 1 flap
                         if (n === 0) {
                             if (outJSON[trackName]===undefined)outJSON[trackName]={};
                             let finishTimeinMS = convertTimeToMS(catRows[i].getElementsByTagName("a")[1].innerHTML.replace("\'",":").replace("\"","."));
                             if (finishTimeinMS==="NT") continue;
                             if (outJSON[trackName]["Normal"]["finishTimeinMS"]===finishTimeinMS) continue;
-                            if (cdCategoriesTranslated[mkwppTrackAbbr.indexOf(trackName)].includes("Glitch")) categoryName = "Glitch";
                             outJSON[trackName][categoryName] = {};
                             outJSON[trackName][categoryName]["finishTimeinMS"] = finishTimeinMS;
                         }
@@ -60,24 +78,7 @@ async function grabTimesFromMKWPP(url){
             }
         }
     })
-    return [await crossCheckChadsoftOUTJSON(outJSON),await crossCheckChadsoftOUTJSON(outJSONFlap)];
-}
-async function crossCheckChadsoftOUTJSON(outJSON){
-    for (let track of Object.keys(outJSON)) {
-        let categories = Object.keys(outJSON[track]);
-        if (categories.length===1) continue;
-        let x, y, z;
-        if (categories.includes("Normal")) x = true;
-        if (categories.includes("Shortcut")) y = true;
-        if (categories.includes("Glitch")) z = true;
-        if (y&&z) if (outJSON[track]["Shortcut"]["finishTimeinMS"]<outJSON[track]["Glitch"]["finishTimeinMS"]) { 
-            delete outJSON[track]["Glitch"]["finishTimeinMS"];
-            z = false;
-        }
-        if (x&&y) if (outJSON[track]["Normal"]["finishTimeinMS"]<outJSON[track]["Shortcut"]["finishTimeinMS"]) delete outJSON[track]["Shortcut"]["finishTimeinMS"];
-        if (x&&z) if (outJSON[track]["Normal"]["finishTimeinMS"]<outJSON[track]["Glitch"]["finishTimeinMS"]) delete outJSON[track]["Glitch"]["finishTimeinMS"];
-    }
-    return outJSON;
+    return [outJSON,outJSONFlap];
 }
 async function grabTimesFromChadsoft(cdUrl){
     if (cdUrl === undefined) {
@@ -121,7 +122,7 @@ async function grabTimesFromChadsoft(cdUrl){
             }
         }
     });
-    return [outJSON,outJSONFlap];
+    return [await crossCheckChadsoftOUTJSON(outJSON),await crossCheckChadsoftOUTJSON(outJSONFlap)];
 }
 async function grabTimesFromMKL(url){
     let outJSON = {};
@@ -175,9 +176,32 @@ async function grabTimesFromMKLsubmitted(url){
     });
     return outJSON;
 }
-async function preFilterCDforMKWPP(cdJSON){
-    for (let i of Object.keys(cdJSON)) if (Object.keys(cdJSON[i]).includes("Glitch")&&Object.keys(cdJSON[i]).includes("Shortcut")) delete cdJSON[i]["Shortcut"];
-    return cdJSON;
+async function preFilterforMKWPP(cdJSONs,mkwppJSONs){
+    for (let j = 0; j < 2; j++){
+        for (let i of Object.keys(mkwppJSONs[j])) if (Object.keys(mkwppJSONs[j][i]).includes("Jolly")) {
+            let pass = false;
+            if (cdJSONs[j][i]["Shortcut"]!==undefined) {
+                if (mkwppJSONs[j][i]["Jolly"]["finishTimeinMS"] > cdJSONs[j][i]["Shortcut"]["finishTimeinMS"]) delete mkwppJSONs[j][i]["Jolly"];
+                else if (mkwppJSONs[j][i]["Jolly"]["finishTimeinMS"] === cdJSONs[j][i]["Shortcut"]["finishTimeinMS"]) {
+                delete cdJSONs[j][i]["Shortcut"];
+                delete mkwppJSONs[j][i]["Jolly"];
+                }
+                else if (mkwppJSONs[j][i]["Jolly"]["finishTimeinMS"] < cdJSONs[j][i]["Shortcut"]["finishTimeinMS"]){
+                    pass = true
+                    delete cdJSONs[j][i]["Shortcut"];
+                }
+            }
+            if (!pass) continue;
+            if (cdJSONs[j][i]["Glitch"]!==undefined) {
+                if (mkwppJSONs[j][i]["Jolly"]["finishTimeinMS"] > cdJSONs[j][i]["Glitch"]["finishTimeinMS"]) delete mkwppJSONs[j][i]["Jolly"];
+                else if (mkwppJSONs[j][i]["Jolly"]["finishTimeinMS"] <= cdJSONs[j][i]["Glitch"]["finishTimeinMS"]) {
+                    delete cdJSONs[j][i]["Glitch"];
+                    delete mkwppJSONs[j][i]["Jolly"];
+                }
+            }
+        }
+    }
+    return [cdJSONs,mkwppJSONs];
 }
 async function compareTimesJSON(cdJSON,siteJSON){
     let outJSON = {};
@@ -243,7 +267,7 @@ async function mergeJSONsByDates(json1,json2){
 function invasiveCopytoClipboard(txt){
     navigator.permissions.query({name:'clipboard-write'}).then((result) => {
     if (result.state === 'granted') navigator.clipboard.writeText(txt);
-    else if (result.state === 'denied') invasiveCopytoClipboard(txt)
+    else if (result.state === "prompt"||result.state === "denied") invasiveCopytoClipboard(txt);
   });
 }
 async function mkwppbehavior(mkwppurl,cdUrl){
@@ -257,10 +281,10 @@ async function mkwppbehavior(mkwppurl,cdUrl){
         if (st) window.open("https://www.mariokart64.com/mkw/", '_blank').focus();
         return; /* The content script is running on the Tab that you called it on, even if you accept the prompt you'd have to call it again regardless */
     }
-    let cdJSONs = await grabTimesFromChadsoft(cdUrl);
-    let mkwppsJSONs = await grabTimesFromMKWPP(mkwppurl);
-    let courseJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[0]),mkwppsJSONs[0]);
-    let flapJSON = await compareTimesJSON(await preFilterCDforMKWPP(cdJSONs[1]),mkwppsJSONs[1]);
+    let allJSONs = await preFilterforMKWPP(await grabTimesFromChadsoft(cdUrl), await grabTimesFromMKWPP(mkwppurl));
+    console.log(allJSONs)
+    let courseJSON = await compareTimesJSON(allJSONs[0][0],allJSONs[1][0]);
+    let flapJSON = await compareTimesJSON(allJSONs[0][1],allJSONs[1][1]);
     let finalJSON = await mergeJSONsByDates(courseJSON,flapJSON);
     let usernameLine = `Name: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     let finaltext = "";
