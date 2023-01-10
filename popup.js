@@ -38,7 +38,7 @@ async function saveMKWPPLink(){
 async function lookForUpdates(mode = 0){
     /* Checks if the Manifest file uploaded to Github is the same version as the current file */
     let manifest = await fetch("https://raw.githubusercontent.com/FallBackITA27/Auto-Updater-MKL-MKWPP/main/manifest.json").then(r=>r.json());
-    if (manifest.version !== "1.1.2") { // VERSION HERE (Comment for CTRL+F)
+    if (manifest.version !== "1.1.3") { // VERSION HERE (Comment for CTRL+F)
         let c = confirm(chrome.i18n.getMessage("updateFound"));
         if (c) window.open("https://github.com/FallBackITA27/Auto-Updater-MKL-MKWPP/","_blank").focus()
     }

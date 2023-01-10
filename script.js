@@ -215,6 +215,7 @@ async function mergeJSONs(json1,json2){
 }
 
 function getDateString(unixTimestamp){
+    console.log(unixTimestamp)
     let date = new Date(unixTimestamp);
     let day = date.getDate();
     let dayTxt;
@@ -232,17 +233,16 @@ function getDateString(unixTimestamp){
  */
 async function mergeJSONsByDates(json1,json2){
     let outJSON = {};
-   
-    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) outJSON[getDateString(json1[track][category]["date"])] = {};
-    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) outJSON[getDateString(json2[track][category]["date"])] = {};
+    for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) outJSON[json1[track][category]["date"]] = {};
+    for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) outJSON[json2[track][category]["date"]] = {};
     for (let track of Object.keys(json1)) for (let category of Object.keys(json1[track])) {
-        let date = getDateString(json1[track][category]["date"]);
+        let date = json1[track][category]["date"];
         if (outJSON[date][track] === undefined) outJSON[date][track] = {};
         outJSON[date][track][category] = {};
         outJSON[date][track][category]["3lap"] = json1[track][category];
     }
     for (let track of Object.keys(json2)) for (let category of Object.keys(json2[track])) {
-        let date = getDateString(json2[track][category]["date"]);
+        let date = json2[track][category]["date"];
         if (outJSON[date][track] === undefined) outJSON[date][track] = {};
         if (outJSON[date][track][category]===undefined) outJSON[date][track][category] = {};
         outJSON[date][track][category]["flap"] = json2[track][category];
@@ -273,8 +273,10 @@ async function mkwppbehavior(mkwppurl,cdUrl){
     let finalJSON = await mergeJSONsByDates(courseJSON,flapJSON);
     let usernameLine = `Name: ${sessionStorage.getItem("mkwppUsername")}\n\n`
     let finaltext = "";
-    for (let date of Object.keys(finalJSON)){
-        finaltext+=`Date: ${date}\n${usernameLine}`
+    for (let date of Object.keys(finalJSON).sort((a,b)=> parseInt(a) - parseInt(b))){
+        console.log(date)
+        console.log(getDateString(parseInt(date)))
+        finaltext+=`Date: ${getDateString(parseInt(date))}\n${usernameLine}`
         for (let track of Object.keys(finalJSON[date])) for (let category of Object.keys(finalJSON[date][track])){
             let writecat = "";
             if (category==="Normal") writecat = "nosc "
