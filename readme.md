@@ -78,6 +78,7 @@ You could donate 5$ for me to publish on the Webstore!
 * [1.0.0](#100)
 
 ### 1.1.3
+* Cross Checking Normal Categories, Shortcut and Glitch.
 * Reverted to an old faster system to get dates. System uses UTC, which is also technically more accurate.
 ### 1.1.2
 * The script now looks for updates once a day. --FalB
