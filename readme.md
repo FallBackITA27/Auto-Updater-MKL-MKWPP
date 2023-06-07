@@ -1,3 +1,5 @@
+# ⚠️ THIS BROKE FOR A NUMBER OF REASONS, IT WILL NOT BE MAINTAINED ANYMORE. ⚠️
+
 # Automatic Updater for Mario Kart Wii's Players' Page and Mario Kart Leaderboards
 
 ### Table of Contents
