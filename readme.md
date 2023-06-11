@@ -1,6 +1,6 @@
 # ⚠️ THIS BROKE FOR A NUMBER OF REASONS, IT WILL NOT BE MAINTAINED ANYMORE. ⚠️
 
-It has moved to (Local Automatic Times Updater for MKW)[https://github.com/FallBackITA27/Local-Automatic-Times-Updater-for-MKW]
+It has moved to [Local Automatic Times Updater for MKW](https://github.com/FallBackITA27/Local-Automatic-Times-Updater-for-MKW)
 
 # Automatic Updater for Mario Kart Wii's Players' Page and Mario Kart Leaderboards
 
